@@ -13,6 +13,8 @@ class BrowserViewController: UIViewController {
     private class DrawerView: UIView {
         override var intrinsicContentSize: CGSize { return CGSize(width: 320, height: 0) }
     }
+    
+    fileprivate let keyboardLayoutGuide = UILayoutGuide()
 
     private var splashScreen: UIView?
     private var context = LAContext()
@@ -93,6 +95,11 @@ class BrowserViewController: UIViewController {
         setupBiometrics()
         view.addSubview(mainContainerView)
         view.addSubview(drawerContainerView)
+        
+        view.addLayoutGuide(keyboardLayoutGuide)
+        keyboardLayoutGuide.snp.makeConstraints { make in
+            make.bottom.equalToSuperview()
+        }
 
         drawerOverlayView.backgroundColor = UIColor(white: 0, alpha: 0.8)
         drawerOverlayView.layer.opacity = 0
@@ -189,6 +196,11 @@ class BrowserViewController: UIViewController {
         }
         
         view.addSubview(findInPageWrapper)
+        
+        findInPageWrapper.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview()
+            make.bottom.equalToSuperview()
+        }
 
         // true if device is an iPad or is an iPhone in landscape mode
         showsToolsetInURLBar = (UIDevice.current.userInterfaceIdiom == .pad && (UIScreen.main.bounds.width == view.frame.size.width || view.frame.size.width > view.frame.size.height)) || (UIDevice.current.userInterfaceIdiom == .phone && view.frame.size.width > view.frame.size.height)
@@ -385,12 +397,10 @@ class BrowserViewController: UIViewController {
     
     override func updateViewConstraints() {
         super.updateViewConstraints()
-        findInPageWrapper.snp.remakeConstraints { make in
-            make.centerX.equalTo(self.view)
-            make.width.equalTo(self.view.snp.width)
-            
+        
+        keyboardLayoutGuide.snp.remakeConstraints { make in
             if let keyboardHeight = keyboardState?.intersectionHeightForView(view: self.view), keyboardHeight > 0 {
-                make.bottom.equalTo(self.view).offset(-keyboardHeight)
+                make.bottom.equalToSuperview().offset(-keyboardHeight)
             } else if !browserToolbar.isHidden {
                 // is an iPhone
                 make.bottom.equalTo(self.browserToolbar.snp.top).priority(.low)
@@ -400,6 +410,22 @@ class BrowserViewController: UIViewController {
                 make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
             }
         }
+        
+//        findInPageWrapper.snp.remakeConstraints { make in
+//            make.centerX.equalTo(self.view)
+//            make.width.equalTo(self.view.snp.width)
+//
+//            if let keyboardHeight = keyboardState?.intersectionHeightForView(view: self.view), keyboardHeight > 0 {
+//                make.bottom.equalTo(self.view).offset(-keyboardHeight)
+//            } else if !browserToolbar.isHidden {
+//                // is an iPhone
+//                make.bottom.equalTo(self.browserToolbar.snp.top).priority(.low)
+//                make.bottom.lessThanOrEqualTo(self.view.safeAreaLayoutGuide.snp.bottom).priority(.required)
+//            } else {
+//                // is an iPad
+//                make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
+//            }
+//        }
     }
     
     func updateFindInPageVisibility(visible: Bool, text: String = "") {
@@ -421,22 +447,20 @@ class BrowserViewController: UIViewController {
 
                 updateViewConstraints()
                 
-                UIView.animate(withDuration: 2.0, animations: {
-                    findInPageBar.snp.makeConstraints { make in
-                        make.height.equalTo(UIConstants.ToolbarHeight)
-                        make.leading.trailing.equalTo(self.findInPageWrapper)
-                        make.bottom.equalTo(self.findInPageWrapper.snp.bottom)
-                    }
-                }) { (_) in
-                    fillerView.snp.makeConstraints { make in
-                        make.top.equalTo(self.findInPageWrapper.snp.bottom)
-                        make.bottom.equalTo(self.view)
-                        make.leading.trailing.equalTo(self.findInPageWrapper)
-                    }
+                findInPageBar.snp.makeConstraints { make in
+                    make.height.equalTo(UIConstants.ToolbarHeight)
+                    make.leading.trailing.equalTo(self.findInPageWrapper)
+                    make.bottom.equalTo(keyboardLayoutGuide)
                 }
+
+                fillerView.snp.makeConstraints { make in
+                    make.top.equalTo(self.findInPageWrapper.snp.bottom)
+                    make.bottom.equalTo(self.view)
+                    make.leading.trailing.equalTo(self.findInPageWrapper)
+                }
+                
+                findInPageBar.becomeFirstResponder()
             }
-            
-            self.findInPageBar?.becomeFirstResponder()
         } else if let findInPageBar = self.findInPageBar {
             findInPageBar.endEditing(true)
             webViewController.evaluate("__firefox__.findDone()", completion: nil)
