@@ -36,7 +36,7 @@ class BrowserViewController: UIViewController {
     fileprivate let requestHandler = RequestHandler()
     fileprivate var findInPageBar: FindInPageBar?
     fileprivate var fillerView: UIView?
-    fileprivate let alertStackView = UIStackView() // All content that appears above the footer should be added to this view. (Find In Page/SnackBars)
+    fileprivate let findInPageWrapper = UIView()
 
     fileprivate var drawerConstraint: Constraint!
     fileprivate var toolbarBottomConstraint: Constraint!
@@ -188,9 +188,7 @@ class BrowserViewController: UIViewController {
             make.leading.trailing.bottom.equalTo(mainContainerView)
         }
         
-        view.addSubview(alertStackView)
-        alertStackView.axis = .vertical
-        alertStackView.alignment = .center
+        view.addSubview(findInPageWrapper)
 
         // true if device is an iPad or is an iPhone in landscape mode
         showsToolsetInURLBar = (UIDevice.current.userInterfaceIdiom == .pad && (UIScreen.main.bounds.width == view.frame.size.width || view.frame.size.width > view.frame.size.height)) || (UIDevice.current.userInterfaceIdiom == .phone && view.frame.size.width > view.frame.size.height)
@@ -387,7 +385,7 @@ class BrowserViewController: UIViewController {
     
     override func updateViewConstraints() {
         super.updateViewConstraints()
-        alertStackView.snp.remakeConstraints { make in
+        findInPageWrapper.snp.remakeConstraints { make in
             make.centerX.equalTo(self.view)
             make.width.equalTo(self.view.snp.width)
             
@@ -418,7 +416,7 @@ class BrowserViewController: UIViewController {
                 findInPageBar.text = text
                 findInPageBar.delegate = self
                 
-                alertStackView.addArrangedSubview(findInPageBar)
+                findInPageWrapper.addSubview(findInPageBar)
                 mainContainerView.insertSubview(fillerView, belowSubview: browserToolbar)
 
                 updateViewConstraints()
@@ -426,14 +424,14 @@ class BrowserViewController: UIViewController {
                 UIView.animate(withDuration: 2.0, animations: {
                     findInPageBar.snp.makeConstraints { make in
                         make.height.equalTo(UIConstants.ToolbarHeight)
-                        make.leading.trailing.equalTo(self.alertStackView)
-                        make.bottom.equalTo(self.alertStackView.snp.bottom)
+                        make.leading.trailing.equalTo(self.findInPageWrapper)
+                        make.bottom.equalTo(self.findInPageWrapper.snp.bottom)
                     }
                 }) { (_) in
                     fillerView.snp.makeConstraints { make in
-                        make.top.equalTo(self.alertStackView.snp.bottom)
+                        make.top.equalTo(self.findInPageWrapper.snp.bottom)
                         make.bottom.equalTo(self.view)
-                        make.leading.trailing.equalTo(self.alertStackView)
+                        make.leading.trailing.equalTo(self.findInPageWrapper)
                     }
                 }
             }
