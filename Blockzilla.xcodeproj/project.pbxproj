@@ -1345,6 +1345,9 @@
 							com.apple.ApplicationGroups.iOS = {
 								enabled = 1;
 							};
+							com.apple.Siri = {
+								enabled = 1;
+							};
 						};
 					};
 					E4BF2DEB1BACE92400DA9D68 = {

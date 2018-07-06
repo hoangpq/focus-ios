@@ -25,6 +25,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 UserDefaults.standard.removePersistentDomain(forName: bundleID)
             }
         }
+
         setupContinuousDeploymentTooling()
         setupErrorTracking()
         setupTelemetry()
@@ -144,6 +145,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return true
     }
 
+    func application(_ application: UIApplication,
+                     continue userActivity: NSUserActivity,
+                     restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
+        if #available(iOS 12.0, *) {
+            if let intent = userActivity.interaction?.intent as? SearchForIntent {
+                guard let query = intent.searchTerm else { return false }
+                browserViewController.submit(getQuery(url: URIFixup.getURL(entry: query)))
+            }
+        }
+        return true
+    }
+    
     public func getQuery(url: URL) -> [String: String] {
         var results = [String: String]()
         let keyValues =  url.query?.components(separatedBy: "&")

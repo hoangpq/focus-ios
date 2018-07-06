@@ -1319,3 +1319,15 @@ extension BrowserViewController: TrackingProtectionSummaryDelegate {
     }
 }
 
+@available(iOS 12.0, *)
+extension BrowserViewController {
+    public var intent: SearchForIntent {
+        let searchForIntent = SearchForIntent()
+        // how to get the search term?
+        //searchForIntent.searchTerm = searchEngineManager.activeEngine.urlForQuery(text)
+        return searchForIntent
+    }
+    
+    public init? 
+}
+
