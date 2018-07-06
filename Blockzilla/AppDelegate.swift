@@ -4,6 +4,7 @@
 
 import UIKit
 import Telemetry
+import Intents
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -150,8 +151,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                      restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
         if #available(iOS 12.0, *) {
             if let intent = userActivity.interaction?.intent as? SearchForIntent {
-                guard let query = intent.searchTerm else { return false }
-                browserViewController.submit(getQuery(url: URIFixup.getURL(entry: query)))
+                guard let query = intent.searchTerm, let url = URIFixup.getURL(entry: query) else { return false }
+                browserViewController.submit(url: url)
             }
         }
         return true

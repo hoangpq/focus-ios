@@ -8,6 +8,7 @@ import SnapKit
 import Telemetry
 import LocalAuthentication
 import StoreKit
+import IntentsUI
 
 class BrowserViewController: UIViewController {
     private class DrawerView: UIView {
@@ -280,6 +281,19 @@ class BrowserViewController: UIViewController {
                 self.resetBrowser()
                 AppDelegate.splashView?.animateHidden(true, duration: 0.25)
             }
+        }
+    }
+    
+    private func setupSiriShortcut() {
+        if #available(iOS 12.0, *) {
+            let intent = SearchForIntent()
+            if let shortcut = INShortcut(intent: intent) {
+                let addVoiceShortcutVC = INUIAddVoiceShortcutViewController(shortcut: shortcut)
+                addVoiceShortcutVC.delegate = self
+                present(addVoiceShortcutVC, animated: true, completion: nil)
+            }
+        } else {
+            // Fallback on earlier versions
         }
     }
 
@@ -1256,6 +1270,53 @@ extension BrowserViewController: WebControllerDelegate {
     }
 }
 
+extension BrowserViewController: INUIAddVoiceShortcutViewControllerDelegate {
+    
+    // MARK: - INUIAddVoiceShortcutViewControllerDelegate
+    
+    @available(iOS 12.0, *)
+    func addVoiceShortcutViewController(_ controller: INUIAddVoiceShortcutViewController,
+                                        didFinishWith voiceShortcut: INVoiceShortcut?,
+                                        error: Error?) {
+        if let error = error as NSError? {
+            print("error adding voice shortcut")
+            return
+        }
+        updateVoiceShortcuts()
+    }
+    
+    @available(iOS 12.0, *)
+    func addVoiceShortcutViewControllerDidCancel(_ controller: INUIAddVoiceShortcutViewController) {
+        dismiss(animated: true, completion: nil)
+    }
+}
+extension BrowserViewController: INUIEditVoiceShortcutViewControllerDelegate {
+    
+    // MARK: - INUIEditVoiceShortcutViewControllerDelegate
+    
+    @available(iOS 12.0, *)
+    func editVoiceShortcutViewController(_ controller: INUIEditVoiceShortcutViewController,
+                                         didUpdate voiceShortcut: INVoiceShortcut?,
+                                         error: Error?) {
+        if let error = error as NSError? {
+            print("error adding voice shortcut")
+            return
+        }
+        updateVoiceShortcuts()
+    }
+    
+    @available(iOS 12.0, *)
+    func editVoiceShortcutViewController(_ controller: INUIEditVoiceShortcutViewController,
+                                         didDeleteVoiceShortcutWithIdentifier deletedVoiceShortcutIdentifier: UUID) {
+        updateVoiceShortcuts()
+    }
+    
+    @available(iOS 12.0, *)
+    func editVoiceShortcutViewControllerDidCancel(_ controller: INUIEditVoiceShortcutViewController) {
+        dismiss(animated: true, completion: nil)
+    }
+}
+
 extension BrowserViewController: KeyboardHelperDelegate {
 
     func keyboardHelper(_ keyboardHelper: KeyboardHelper, keyboardWillShowWithState state: KeyboardState) {
@@ -1318,16 +1379,3 @@ extension BrowserViewController: TrackingProtectionSummaryDelegate {
         hideDrawer()
     }
 }
-
-@available(iOS 12.0, *)
-extension BrowserViewController {
-    public var intent: SearchForIntent {
-        let searchForIntent = SearchForIntent()
-        // how to get the search term?
-        //searchForIntent.searchTerm = searchEngineManager.activeEngine.urlForQuery(text)
-        return searchForIntent
-    }
-    
-    public init? 
-}
-
