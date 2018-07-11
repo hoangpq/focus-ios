@@ -69,6 +69,7 @@ class WebViewController: UIViewController, WebController {
 
     var printFormatter: UIPrintFormatter { return browserView.viewPrintFormatter() }
     var scrollView: UIScrollView { return browserView.scrollView }
+    var submittedUrl: URL?
 
     convenience init() {
         self.init(nibName: nil, bundle: nil)
@@ -223,6 +224,12 @@ extension WebViewController: WKNavigationDelegate {
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         delegate?.webControllerDidFinishNavigation(self)
+    }
+    
+    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+        let errorPageData = ErrorPage(error: error).data
+        guard let submittedUrl = submittedUrl else { return }
+        webView.load(errorPageData, mimeType: "", characterEncodingName: "", baseURL: submittedUrl)
     }
 
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {

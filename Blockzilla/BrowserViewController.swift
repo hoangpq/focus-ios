@@ -585,6 +585,7 @@ class BrowserViewController: UIViewController {
             }
         }
 
+        webViewController.submittedUrl = url
         webViewController.load(URLRequest(url: url))
     }
 
