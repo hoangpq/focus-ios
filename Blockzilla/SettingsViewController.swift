@@ -451,7 +451,7 @@ class SettingsViewController: UIViewController, UITableViewDataSource, UITableVi
     }
 
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return sections[section] != .search ? 50 : 30
+        return sections[section] == .privacy ? 50 : 30
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
